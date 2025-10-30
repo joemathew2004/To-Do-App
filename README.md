@@ -2,6 +2,13 @@
 
 A modern, aesthetic to-do application with user authentication and customizable themes.
 
+<table>
+  <tr>
+    <td><img src="app 1.png" alt="Work Experience" width="100%"></td>
+    <td><img src="app 2.png" alt="Summary Generation" width="100%"></td>
+  </tr>
+</table>
+
 ## ✨ Features
 
 - **User Authentication** - Secure sign up and login system
