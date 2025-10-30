@@ -421,35 +421,61 @@
         const savedTheme = localStorage.getItem(`theme_${currentUser.id}`) || 'blue';
         setTheme(savedTheme);
 
-        let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
+    // Load user's tasks from localStorage.
+    // Each task is expected to be an object like:
+    // { text: string, deadline: string|null, completed: boolean, createdAt: ISOString }
+    // We keep tasks as an array and refer to items by numeric index throughout the code.
+    let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
         
+        /**
+         * Persist the tasks array to localStorage and update the UI stats.
+         * Called after any change to the tasks array (add, toggle, delete).
+         */
         function saveTasks() {
             localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
             updateStats();
         }
         
+        /**
+         * Update the counters shown in the UI (total / completed / pending).
+         * This is a cheap derived calculation from the tasks array.
+         */
         function updateStats() {
             const total = tasks.length;
             const completed = tasks.filter(task => task.completed).length;
             const pending = total - completed;
-            
+
             document.getElementById('totalTasks').textContent = total;
             document.getElementById('completedTasks').textContent = completed;
             document.getElementById('pendingTasks').textContent = pending;
         }
         
+        /**
+         * Convert a deadline ISO date string into a small object used for display.
+         * Returns empty string when there's no deadline.
+         * The returned object provides a human-friendly label and optional CSS class
+         * that highlights overdue/today items.
+         */
         function formatDeadline(deadline) {
             if (!deadline) return '';
             const today = new Date().toDateString();
             const taskDate = new Date(deadline).toDateString();
             const isPast = new Date(deadline) < new Date().setHours(0,0,0,0);
-            
+
             if (taskDate === today) return { text: 'Due today', class: 'today' };
             if (isPast) return { text: 'Overdue', class: 'overdue' };
             return { text: `Due ${new Date(deadline).toLocaleDateString()}`, class: '' };
         }
         
-        function renderTasks() {
+    /**
+     * Render the task list into the DOM.
+     * IMPORTANT: tasks are displayed sorted by deadline, but many operations
+     * (toggleTask/deleteTask) operate on the original `tasks` array by index.
+     * To ensure event handlers target the correct underlying task, we build
+     * a `sortedIndices` array that contains original indices in sorted order
+     * and use those indices when wiring up handlers.
+     */
+    function renderTasks() {
             const taskList = document.getElementById('taskList');
             const emptyState = document.getElementById('emptyState');
             const celebration = document.getElementById('celebration');
@@ -471,28 +497,35 @@
             emptyState.style.display = 'none';
             taskList.innerHTML = '';
             
-            // Sort tasks by due dates
-            const sortedTasks = [...tasks].sort((a, b) => {
-                // Put tasks without deadlines at the bottom
-                if (!a.deadline && !b.deadline) return 0;
-                if (!a.deadline) return 1;
-                if (!b.deadline) return -1;
-                
-                // Sort by deadline
-                return new Date(a.deadline) - new Date(b.deadline);
-            });
+            // Sort tasks by due dates but keep original indices so event handlers target the right task
+            const sortedIndices = tasks
+                .map((t, i) => i)
+                .sort((i, j) => {
+                    const a = tasks[i];
+                    const b = tasks[j];
+                    // Put tasks without deadlines at the bottom
+                    if (!a.deadline && !b.deadline) return 0;
+                    if (!a.deadline) return 1;
+                    if (!b.deadline) return -1;
+                    // Sort by deadline
+                    return new Date(a.deadline) - new Date(b.deadline);
+                });
 
-            sortedTasks.forEach((task, index) => {
+            // For each original task index (in sorted order), create a DOM node and
+            // wire the checkbox/delete button to the original index. This avoids the
+            // classic bug where the UI's loop index doesn't match the underlying array.
+            sortedIndices.forEach((taskIndex) => {
+                const task = tasks[taskIndex];
                 const taskDiv = document.createElement('div');
                 taskDiv.className = `task ${task.completed ? 'completed' : ''}`;
                 const deadlineInfo = formatDeadline(task.deadline);
                 taskDiv.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${taskIndex})">
                     <div class="task-content">
                         <div class="task-text">${task.text}</div>
                         ${task.deadline ? `<div class="task-deadline ${deadlineInfo.class}">${deadlineInfo.text}</div>` : ''}
                     </div>
-                    <button class="delete-btn" onclick="deleteTask(${index})">Delete</button>
+                    <button class="delete-btn" onclick="deleteTask(${taskIndex})">Delete</button>
                 `;
                 taskList.appendChild(taskDiv);
             });
