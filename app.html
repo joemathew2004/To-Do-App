@@ -470,7 +470,18 @@
             emptyState.style.display = 'none';
             taskList.innerHTML = '';
             
-            tasks.forEach((task, index) => {
+            // Sort tasks by due dates
+            const sortedTasks = [...tasks].sort((a, b) => {
+                // Put tasks without deadlines at the bottom
+                if (!a.deadline && !b.deadline) return 0;
+                if (!a.deadline) return 1;
+                if (!b.deadline) return -1;
+                
+                // Sort by deadline
+                return new Date(a.deadline) - new Date(b.deadline);
+            });
+
+            sortedTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
                 taskDiv.className = `task ${task.completed ? 'completed' : ''}`;
                 const deadlineInfo = formatDeadline(task.deadline);
