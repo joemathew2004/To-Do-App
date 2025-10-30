@@ -56,18 +56,19 @@
             transform: scale(1.1);
         }
         .color-options {
-            position: absolute;
-            top: 45px;
-            left: 0; 
-            right: auto;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
+            position: fixed;
+            top: 80px;
+            left: auto;
+            right: 20px;
+            z-index: 9999;
+            background: rgba(255, 255, 255, 0.98);
             padding: 15px;
             border-radius: 15px;
             display: none;
             gap: 10px;
             backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 2px solid #e1e5e9;
         }
         .color-options.show {
             display: flex;
