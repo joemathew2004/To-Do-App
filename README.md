@@ -5,7 +5,7 @@ A modern, aesthetic to-do application with user authentication and customizable 
 <table>
   <tr>
     <td><img src="app 1.png" alt="Work Experience" width="400px"></td>
-    <td><img src="app 2.png" alt="Summary Generation" width="100%"></td>
+    <td><img src="app 2.png" alt="Summary Generation" width="400px"></td>
   </tr>
 </table>
 
