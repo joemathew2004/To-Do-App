@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Sign In</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .auth-container { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 400px;
+            margin: 20px;
+            backdrop-filter: blur(10px);
+        }
+        @media (min-width: 768px) {
+            .auth-container { padding: 40px; margin: 0; }
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { 
+            color: #667eea; 
+            font-size: 2rem; 
+            font-weight: 700; 
+            margin-bottom: 5px;
+        }
+        @media (min-width: 768px) {
+            .logo h1 { font-size: 2.5rem; }
+        }
+        .logo p { color: #666; font-size: 0.9rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #333; 
+            font-weight: 500;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        @media (min-width: 768px) {
+            .form-group input { padding: 15px; }
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        .btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .toggle-form { 
+            text-align: center; 
+            color: #666; 
+        }
+        .toggle-form a { 
+            color: #667eea; 
+            text-decoration: none; 
+            font-weight: 600;
+        }
+        .toggle-form a:hover { text-decoration: underline; }
+        .form-container { display: none; }
+        .form-container.active { display: block; }
+        .error { 
+            color: #e74c3c; 
+            font-size: 0.9rem; 
+            margin-top: 5px; 
+            display: none;
+        }
+        .success { 
+            color: #27ae60; 
+            font-size: 0.9rem; 
+            margin-top: 5px; 
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>TaskFlow</h1>
+            <p>Organize your life beautifully</p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="form-container active">
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                    <div class="error" id="loginEmailError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                    <div class="error" id="loginPasswordError"></div>
+                </div>
+                <button type="submit" class="btn">Sign In</button>
+                <div class="success" id="loginSuccess"></div>
+            </form>
+            <div class="toggle-form">
+                Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" class="form-container">
+            <form id="signupFormElement">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                    <div class="error" id="signupNameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                    <div class="error" id="signupEmailError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                    <div class="error" id="signupPasswordError"></div>
+                </div>
+                <button type="submit" class="btn">Create Account</button>
+                <div class="success" id="signupSuccess"></div>
+            </form>
+            <div class="toggle-form">
+                Already have an account? <a href="#" onclick="showLogin()">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+        }
+
+        function showSignup() {
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+            
+            let isValid = true;
+            
+            if (!validateEmail(email)) {
+                document.getElementById('loginEmailError').textContent = 'Please enter a valid email';
+                document.getElementById('loginEmailError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!validatePassword(password)) {
+                document.getElementById('loginPasswordError').textContent = 'Password must be at least 6 characters';
+                document.getElementById('loginPasswordError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Check if user exists
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    document.getElementById('loginSuccess').textContent = 'Login successful! Redirecting...';
+                    document.getElementById('loginSuccess').style.display = 'block';
+                    setTimeout(() => window.location.href = 'app.html', 1500);
+                } else {
+                    document.getElementById('loginPasswordError').textContent = 'Invalid email or password';
+                    document.getElementById('loginPasswordError').style.display = 'block';
+                }
+            }
+        });
+
+        document.getElementById('signupFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+            
+            let isValid = true;
+            
+            if (name.length < 2) {
+                document.getElementById('signupNameError').textContent = 'Name must be at least 2 characters';
+                document.getElementById('signupNameError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!validateEmail(email)) {
+                document.getElementById('signupEmailError').textContent = 'Please enter a valid email';
+                document.getElementById('signupEmailError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!validatePassword(password)) {
+                document.getElementById('signupPasswordError').textContent = 'Password must be at least 6 characters';
+                document.getElementById('signupPasswordError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (isValid) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                
+                // Check if user already exists
+                if (users.find(u => u.email === email)) {
+                    document.getElementById('signupEmailError').textContent = 'Email already registered';
+                    document.getElementById('signupEmailError').style.display = 'block';
+                    return;
+                }
+                
+                // Create new user
+                const newUser = { name, email, password, id: Date.now() };
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                document.getElementById('signupSuccess').textContent = 'Account created successfully! Please sign in.';
+                document.getElementById('signupSuccess').style.display = 'block';
+                
+                setTimeout(() => {
+                    showLogin();
+                    document.getElementById('loginEmail').value = email;
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

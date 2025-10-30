@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - My Tasks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; 
+            padding: 10px;
+        }
+        @media (min-width: 768px) {
+            body { padding: 20px; }
+        }
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        @media (min-width: 768px) {
+            .header { padding: 20px 30px; margin-bottom: 30px; flex-wrap: nowrap; gap: 0; }
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        @media (min-width: 768px) {
+            .header-right { gap: 20px; flex-wrap: nowrap; }
+        }
+        .theme-picker {
+            position: relative;
+        }
+        .color-picker-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            background: linear-gradient(45deg, #667eea, #f093fb, #4facfe, #43e97b, #fa709a);
+            transition: all 0.3s ease;
+        }
+        .color-picker-btn:hover {
+            transform: scale(1.1);
+        }
+        .color-options {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 15px;
+            display: none;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .color-options.show {
+            display: flex;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .color-option.active {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+        .header h1 { 
+            color: #667eea; 
+            font-size: 1.5rem; 
+            font-weight: 700;
+        }
+        @media (min-width: 768px) {
+            .header h1 { font-size: 2rem; }
+        }
+        .user-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+        }
+        .user-name { 
+            color: #333; 
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .user-name { font-size: 1rem; }
+        }
+        .logout-btn { 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .logout-btn { padding: 10px 20px; font-size: 1rem; }
+        }
+        .logout-btn:hover { 
+            background: #c0392b; 
+            transform: translateY(-2px);
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        @media (min-width: 768px) {
+            .container { padding: 40px; }
+        }
+        .input-container { 
+            display: flex; 
+            flex-direction: column;
+            margin-bottom: 20px; 
+            gap: 10px;
+        }
+        .input-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        @media (min-width: 768px) {
+            .input-container { margin-bottom: 30px; gap: 15px; }
+            .input-row { flex-direction: row; gap: 15px; }
+        }
+        #taskInput { 
+            flex: 1; 
+            padding: 12px 15px; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        #deadlineInput {
+            padding: 12px 15px; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 768px) {
+            #taskInput, #deadlineInput { padding: 15px 20px; }
+            #deadlineInput { min-width: 180px; }
+        }
+        #taskInput:focus, #deadlineInput:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        #addBtn { 
+            padding: 12px 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            #addBtn { padding: 15px 25px; width: auto; }
+        }
+        #addBtn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .task { 
+            display: flex; 
+            align-items: center; 
+            padding: 15px; 
+            border: 2px solid #f1f3f4; 
+            margin-bottom: 10px; 
+            border-radius: 15px; 
+            background: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 768px) {
+            .task { padding: 20px; margin-bottom: 15px; }
+        }
+        .task:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        .task.completed { 
+            opacity: 0.7; 
+            background: #f8f9fa;
+        }
+        .task.completed .task-text { 
+            text-decoration: line-through; 
+            color: #6c757d;
+        }
+        .task-content { 
+            flex: 1; 
+            margin-left: 15px;
+        }
+        .task-text { 
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .task-deadline { 
+            font-size: 14px;
+            color: #666;
+        }
+        .task-deadline.overdue {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .task-deadline.today {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        .delete-btn { 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .delete-btn:hover { 
+            background: #c0392b; 
+            transform: scale(1.05);
+        }
+        input[type="checkbox"] { 
+            width: 20px; 
+            height: 20px; 
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+        .stats { 
+            display: flex; 
+            justify-content: space-around; 
+            margin-bottom: 20px; 
+            padding: 15px 10px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            border-radius: 15px; 
+            color: white;
+        }
+        @media (min-width: 768px) {
+            .stats { margin-bottom: 30px; padding: 20px; }
+        }
+        .stat { text-align: center; }
+        .stat-number { font-size: 1.5rem; font-weight: 700; }
+        .stat-label { font-size: 0.8rem; opacity: 0.9; }
+        @media (min-width: 768px) {
+            .stat-number { font-size: 2rem; }
+            .stat-label { font-size: 0.9rem; }
+        }
+        .empty-state { 
+            text-align: center; 
+            padding: 60px 20px; 
+            color: #6c757d;
+        }
+        .empty-state h3 { margin-bottom: 10px; }
+        .celebration { 
+            text-align: center; 
+            padding: 60px 20px; 
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .celebration h2 { 
+            font-size: 2.5rem; 
+            margin-bottom: 15px;
+        }
+        .celebration p { 
+            font-size: 1.2rem; 
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TaskFlow</h1>
+        <div class="header-right">
+            <div class="theme-picker">
+                <div class="color-picker-btn" onclick="toggleColorPicker()"></div>
+                <div class="color-options" id="colorOptions">
+                    <div class="color-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)" onclick="setTheme('blue')" data-theme="blue"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" onclick="setTheme('pink')" data-theme="pink"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" onclick="setTheme('cyan')" data-theme="cyan"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" onclick="setTheme('green')" data-theme="green"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)" onclick="setTheme('orange')" data-theme="orange"></div>
+                </div>
+            </div>
+            <div class="user-info">
+                <span class="user-name" id="userName"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="pendingTasks">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-row">
+                <input type="text" id="taskInput" placeholder="What needs to be done?" maxlength="100">
+                <input type="date" id="deadlineInput">
+                <button id="addBtn">Add Task</button>
+            </div>
+        </div>
+        
+        <div id="taskList"></div>
+        
+        <div id="celebration" class="celebration" style="display: none;">
+            <h2>🎉 Hurray! No tasks pending! 🎉</h2>
+            <p>You've completed everything. Time to relax!</p>
+        </div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>No tasks yet!</h3>
+            <p>Add your first task above to get started.</p>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'auth.html';
+        }
+
+        document.getElementById('userName').textContent = `Hello, ${currentUser.name}`;
+        
+        // Theme system
+        const themes = {
+            blue: { primary: '#667eea', secondary: '#764ba2' },
+            pink: { primary: '#f093fb', secondary: '#f5576c' },
+            cyan: { primary: '#4facfe', secondary: '#00f2fe' },
+            green: { primary: '#43e97b', secondary: '#38f9d7' },
+            orange: { primary: '#fa709a', secondary: '#fee140' }
+        };
+        
+        function toggleColorPicker() {
+            document.getElementById('colorOptions').classList.toggle('show');
+        }
+        
+        function setTheme(themeName) {
+            const theme = themes[themeName];
+            document.body.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
+            
+            const style = document.createElement('style');
+            style.innerHTML = `
+                #addBtn, .btn { background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%) !important; }
+                .stats { background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%) !important; }
+                .header h1 { color: ${theme.primary} !important; }
+                #taskInput:focus, #deadlineInput:focus { border-color: ${theme.primary} !important; }
+                .task:hover { border-color: ${theme.primary} !important; }
+                input[type="checkbox"] { accent-color: ${theme.primary} !important; }
+            `;
+            document.head.appendChild(style);
+            
+            localStorage.setItem(`theme_${currentUser.id}`, themeName);
+            
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+            
+            document.getElementById('colorOptions').classList.remove('show');
+        }
+        
+        const savedTheme = localStorage.getItem(`theme_${currentUser.id}`) || 'blue';
+        setTheme(savedTheme);
+
+        let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
+        
+        function saveTasks() {
+            localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
+            updateStats();
+        }
+        
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(task => task.completed).length;
+            const pending = total - completed;
+            
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('pendingTasks').textContent = pending;
+        }
+        
+        function formatDeadline(deadline) {
+            if (!deadline) return '';
+            const today = new Date().toDateString();
+            const taskDate = new Date(deadline).toDateString();
+            const isPast = new Date(deadline) < new Date().setHours(0,0,0,0);
+            
+            if (taskDate === today) return { text: 'Due today', class: 'today' };
+            if (isPast) return { text: 'Overdue', class: 'overdue' };
+            return { text: `Due ${new Date(deadline).toLocaleDateString()}`, class: '' };
+        }
+        
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
+            const celebration = document.getElementById('celebration');
+            
+            if (tasks.length === 0) {
+                taskList.innerHTML = '';
+                emptyState.style.display = 'block';
+                celebration.style.display = 'none';
+                return;
+            }
+            
+            const pendingTasks = tasks.filter(task => !task.completed);
+            if (pendingTasks.length === 0) {
+                celebration.style.display = 'block';
+            } else {
+                celebration.style.display = 'none';
+            }
+            
+            emptyState.style.display = 'none';
+            taskList.innerHTML = '';
+            
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = `task ${task.completed ? 'completed' : ''}`;
+                const deadlineInfo = formatDeadline(task.deadline);
+                taskDiv.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                    <div class="task-content">
+                        <div class="task-text">${task.text}</div>
+                        ${task.deadline ? `<div class="task-deadline ${deadlineInfo.class}">${deadlineInfo.text}</div>` : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${index})">Delete</button>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+            
+            updateStats();
+        }
+        
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const deadlineInput = document.getElementById('deadlineInput');
+            const text = taskInput.value.trim();
+            const deadline = deadlineInput.value;
+            
+            if (text) {
+                tasks.unshift({ 
+                    text, 
+                    deadline: deadline || null, 
+                    completed: false, 
+                    createdAt: new Date().toISOString() 
+                });
+                taskInput.value = '';
+                deadlineInput.value = '';
+                saveTasks();
+                renderTasks();
+            }
+        }
+        
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+            renderTasks();
+        }
+        
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'auth.html';
+        }
+        
+        document.getElementById('addBtn').addEventListener('click', addTask);
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addTask();
+        });
+        
+        renderTasks();
+        document.querySelector(`[data-theme="${savedTheme}"]`).classList.add('active');
+        
+        // Close color picker when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.theme-picker')) {
+                document.getElementById('colorOptions').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
